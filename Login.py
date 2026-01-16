@@ -171,7 +171,7 @@ class DLogin:
         if c['logged'] == 'True':
             return c
         else:
-            return False
+            return {'logged':'False'}
 def Login_starter(username,password):
     print('started')
     v = DLogin(username=username,password=password).end()
@@ -179,4 +179,3 @@ def Login_starter(username,password):
         return {'logged':'True','cookies':v['cook'],'requests_session':r,'head':v['head']}
     else:
         return {'logged':'False'}
-

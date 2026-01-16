@@ -1,3 +1,4 @@
+import colorama
 class DGrabber:
     def __init__(self,cook,req):
         self.req = req
@@ -16,6 +17,9 @@ class DGrabber:
         try:
             try:
                 uid = self.req.get(self.idurl)
+                if uid.json()["graphql"]["user"]['is_private'] == True:
+                    print('this account is private \n exiting the tool...')
+                    return {'grabbed':'False'}
                 id = uid.json()["graphql"]["user"]["id"]#get page id
             except:
                 print('page Username is error')
@@ -48,6 +52,9 @@ class DGrabber:
                 end_curso.append(first_end_cursor)
             except:
                 print('Error getting more than 12 Followers `ECU`')
+                return {'grabbed':'False'}
+            if limit < users_count:
+                print('too little count')
                 return {'grabbed':'False'}
             while limit > users_count:
                 followers_url = f'https://www.instagram.com/graphql/query/?query_id=17851374694183129&id={id}&first=12&after={str(end_curso[0])}'
@@ -83,7 +90,7 @@ class DGrabber:
                         user_username = user['node']['username']
                         self.ides_list.append(user_id)
                         self.user_username.append(user_username)
-                        print(str(user_username) + ' ; ' + str(user_id))
+                        print(colorama.Fore.YELLOW+str(user_username) + ' ; ' +colorama.Fore.YELLOW+str(user_id))
                 except:
                     print('Error getting more than 12 Followers `EXC`')
                     return {'grabbed':'False'}
@@ -95,7 +102,7 @@ class DGrabber:
         if self.grab()['grabbed'] == 'True':
             return {'grabbed':'True','ids':self.ides_list,'users':self.user_username,'requests_session':self.req,'cookies':self.cook}
         else:
-            return {'grabbed':'True'}
+            return {'grabbed':'False'}
 def Grabber_starter(cook,req):
     print('Grabber started')
     x = DGrabber(cook=cook,req=req).end()

@@ -1,3 +1,4 @@
+import colorama
 from user_agent import generate_user_agent
 from time import sleep
 class DStory:
@@ -20,6 +21,7 @@ class DStory:
         self.ajax = head['ajax']
     def get_ids(self):
             err =0
+            seens = 0
             users_count = len(self.users)
             for sequence in range(0,users_count):
                 try:
@@ -47,7 +49,8 @@ class DStory:
                         'x-ig-www-claim': 'hmac.AR3U9SgkUz2nZg_Jx4m0AQA2dLs7aqjooR_FknrkUz-ukjkF',
                         'origin': 'https://www.instagram.com',
                         'referer': 'https://www.instagram.com/',
-                        'x-requested-with': 'XMLHttpRequest'}
+                        'x-requested-with': 'XMLHttpRequest'
+                        }
                     tray_url = f"https://www.instagram.com/api/v1/feed/reels_media/?reel_ids={str(iddd)}"
                     tray_respone = self.req.get(tray_url,headers=tray_head,data={'reel_ids': iddd})
                     try:
@@ -55,26 +58,39 @@ class DStory:
                             continue 
                     except:
                         err+=1
-                        print(f'\nerror {err} ')
+                        print(colorama.Fore.RED +f'\nerror {err} ')
                         continue
-                    itames = tray_respone.json()["reels"][iddd]["items"]
+                    try:
+                        itames = tray_respone.json()["reels"][iddd]["items"]
+                    except:
+                        err+=1
+                        print(colorama.Fore.RED +f'\nerror {err} ')
+                        continue
                     for itame in itames:
                         sleep(self.sleep2)
-                        data={
-                            "reelMediaId":int(itame['pk']),
-                             "reelMediaOwnerId":iddd,
-                             "reelId":int(iddd),
-                             "reelMediaTakenAt":int(itame['taken_at']),
-                             "viewSeenAt":int(itame['taken_at'])
-                             }
-                        response = self.req.post("https://i.instagram.com/api/v1/stories/reel/seen",data=data,headers=tray_head)
-                        if response.json()["status"] =="ok":
-                            print({"status":"ok","user":usss})
-                        else:
-                            print({"status":"no","user":usss})
+                        try:
+                            #data={
+                            #     "reelMediaId":itame['pk'],
+                            #     "reelMediaOwnerId":iddd,
+                            #     "reelId":iddd,
+                            #     "reelMediaTakenAt":itame['taken_at'],
+                            #     "viewSeenAt":itame['taken_at']
+                            #     }
+                            data = f"reelMediaId={itame['pk']}&reelMediaOwnerId={iddd}&reelId={iddd}&reelMediaTakenAt={itame['taken_at']}&viewSeenAt={itame['taken_at']}"
+                        except:
+                            print('data set error')
+                        response = self.req.post("https://i.instagram.com/api/v1/stories/reel/seen",data=data,headers=tray_head)#memoryview: a bytes-like object is required, not 'str'
+                        try:
+                            if response.json()["status"] =="ok":
+                                seens+=1
+                                print({ "seen Count".upper():str(seens),"status":"ok","user":usss})
+                            else:
+                                print(colorama.Fore.RED +{"status":"NOOO","user":usss})
+                        except Exception as status:
+                            print(colorama.Fore.RED +'error status '+ str(status))
                     sleep(self.sleep)
                 except Exception as tray_er:
-                    print(tray_er)
+                    print(colorama.Fore.RED +'\nthe tray_er error  \n'+str(tray_er))
                     return False
             return True
     def end(self):
